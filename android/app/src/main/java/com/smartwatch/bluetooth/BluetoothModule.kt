@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.RequiresApi
+import com.facebook.react.bridge.Callback
 
 const val DISCOVERY_TIME_DELAY_IN_MS = 15000
 
@@ -69,7 +70,7 @@ class BluetoothModule(reactApplicationContext: ReactApplicationContext) :
 
     @RequiresApi(Build.VERSION_CODES.M)
     @ReactMethod
-    fun listDiscoveryDevices() {
+    fun listDiscoveryDevices(successCallback: Callback) {
         val bluetoothManager: BluetoothManager = reactApplicationContext.getSystemService(BluetoothManager::class.java)
         val bluetoothAdapter: BluetoothAdapter = bluetoothManager?.adapter
 
@@ -84,7 +85,7 @@ class BluetoothModule(reactApplicationContext: ReactApplicationContext) :
         Handler(Looper.getMainLooper()).postDelayed({
             bluetoothAdapter?.bluetoothLeScanner.stopScan(deviceScanCallback)
             Log.d("BluetoothConnection", "Busca encerrada")
-            deviceScanCallback.getDiscoveredDevices()
+            successCallback.invoke(deviceScanCallback.getDiscoveredDevices())
         }, DISCOVERY_TIME_DELAY_IN_MS.toLong())
     }
 }

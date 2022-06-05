@@ -3,6 +3,7 @@ package com.smartwatch.bluetooth
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.util.Log
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
 
@@ -13,8 +14,6 @@ class DeviceScanCallback: ScanCallback() {
     private val discoveredDevices: MutableMap<String, String> = mutableMapOf()
 
     override fun onScanResult(callbackType: Int, result: ScanResult?) {
-        Log.d("BluetoothConnection", "onScanResult")
-
         var deviceName: String? = result?.device?.name
         var deviceAddress: String? = result?.device?.address
 
@@ -41,14 +40,12 @@ class DeviceScanCallback: ScanCallback() {
     }
 
     fun getDiscoveredDevices(): WritableMap {
-        Log.d("BluetoothConnection", "getDiscoveredDevices 1")
-        val mappedDevices: WritableMap = WritableNativeMap()
-        discoveredDevices.keys.forEach {
-            mappedDevices.putString("deviceName", it)
-            mappedDevices.putString("deviceAddress", discoveredDevices[it])
-            Log.d("BluetoothConnection", "device $it - ${discoveredDevices[it]}")
+        val mappedDevices: WritableMap = Arguments.createMap()
+
+        for (device in discoveredDevices) {
+            mappedDevices.putString(device.key, device.value)
         }
-        Log.d("BluetoothConnection", "getDiscoveredDevices 2")
+
         return mappedDevices
     }
 }
