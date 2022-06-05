@@ -1,0 +1,1 @@
+export {ScannedDevices} from './ScannedDevice';
