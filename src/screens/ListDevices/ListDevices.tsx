@@ -1,28 +1,63 @@
-import React from 'react';
-import {
-  NativeModules,
-  Text,
-  TouchableOpacity,
-  TouchableOpacityProps,
-  View,
-} from 'react-native';
-
-const Button = ({children, onPress}: TouchableOpacityProps) => {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{backgroundColor: 'red', padding: 10, marginVertical: 5}}>
-      <Text>{children}</Text>
-    </TouchableOpacity>
-  );
-};
+import React, {useCallback, useState} from 'react';
+import {FlatList, NativeModules} from 'react-native';
+import {Button} from '../../components/Button';
+import {ScannedDevices} from '../../components/ScannedDevice';
+import {Container, ListFooter, ListSeparator, Title} from './styles';
 
 export const ListDevices = () => {
-  return (
-    <View style={{padding: 24}}>
-      <Text>List</Text>
+  const [devices, setDevices] =
+    useState<Record<'deviceName' | 'deviceAddress', string>[]>();
 
-      <Button onPress={() => {}}>Request</Button>
+  const handleDiscoveryDevices = useCallback(() => {
+    NativeModules.BluetoothConnection.listDiscoveryDevices(
+      (response: Record<string, string>) => {
+        const discoveryDevices = [];
+        const keys = Object.keys(response);
+        const values = Object.values(response);
+        keys.forEach((key, index) =>
+          discoveryDevices.push({
+            deviceName: key,
+            deviceAddress: values[index],
+          }),
+        );
+        setDevices(discoveryDevices);
+      },
+    );
+  }, []);
+
+  const renderItem = useCallback(
+    ({item}) => (
+      <ScannedDevices
+        deviceName={item.deviceName}
+        deviceAddress={item.deviceAddress}
+      />
+    ),
+    [],
+  );
+
+  const renderSeparator = useCallback(() => <ListSeparator />, []);
+
+  const renderFooter = useCallback(
+    () => (
+      <ListFooter>
+        <Button onPress={handleDiscoveryDevices}>Buscar dispositivos</Button>
+      </ListFooter>
+    ),
+    [handleDiscoveryDevices],
+  );
+
+  return (
+    <Container>
+      <Title>Dispositivos</Title>
+
+      <FlatList
+        data={devices}
+        renderItem={renderItem}
+        ItemSeparatorComponent={renderSeparator}
+        ListFooterComponent={renderFooter}
+      />
+
+      {/* <Button onPress={() => {}}>Request</Button>
 
       <Button
         onPress={() => {
@@ -43,14 +78,7 @@ export const ListDevices = () => {
           NativeModules.BluetoothConnection.hasBluetoothSupport();
         }}>
         hasBluetoothSupport
-      </Button>
-
-      <Button
-        onPress={() => {
-          NativeModules.BluetoothConnection.listDiscoveryDevices();
-        }}>
-        listDiscoveryDevices
-      </Button>
-    </View>
+      </Button>*/}
+    </Container>
   );
 };
